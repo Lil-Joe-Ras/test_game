@@ -108,11 +108,11 @@ const wsProtocol = location.protocol === "https:" ? "wss://" : "ws://";
 const ws = new WebSocket(wsProtocol + location.host);
 
 // Prompt username
-let username = prompt("Enter your username:") || "Anonymous";
-username = username.trim() || "Anonymous";
+let player.username = prompt("Enter your player.username:") || "Anonymous";
+player.username = player.username.trim() || "Anonymous";
 
 ws.addEventListener("open", () => {
-  ws.send(JSON.stringify({ type: "setName", name: username }));
+  ws.send(JSON.stringify({ type: "setName", name: player.username }));
 });
 
 // ====================
