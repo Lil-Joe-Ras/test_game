@@ -76,7 +76,7 @@ function isWall(x, y) {
 // ====================
 // PLAYER STATE
 // ====================
-let player = { x: 3, y: 17, angle: 0 };
+let player = {pose: { x: 3, y: 17, angle: 0 }};
 let z = 0;
 let zVel = 0;
 let onGround = true;
@@ -171,33 +171,33 @@ function update() {
   if (isChatting) {
     if (ws.readyState === WebSocket.OPEN) {
       ws.send(
-        JSON.stringify({ x: player.x, y: player.y, angle: player.angle, z })
+        JSON.stringify({ x: player.pose.x, y: player.pose.y, angle: player.pose.angle, z })
       );
     }
     return;
   }
 
-  if (keys["ArrowLeft"]) player.angle -= 0.04;
-  if (keys["ArrowRight"]) player.angle += 0.04;
+  if (keys["ArrowLeft"]) player.pose.angle -= 0.04;
+  if (keys["ArrowRight"]) player.pose.angle += 0.04;
 
   let moveX = 0,
     moveY = 0;
 
   if (keys["w"]) {
-    moveX += Math.cos(player.angle) * MOVE_SPEED;
-    moveY += Math.sin(player.angle) * MOVE_SPEED;
+    moveX += Math.cos(player.pose.angle) * MOVE_SPEED;
+    moveY += Math.sin(player.pose.angle) * MOVE_SPEED;
   }
   if (keys["s"]) {
-    moveX -= Math.cos(player.angle) * MOVE_SPEED;
-    moveY -= Math.sin(player.angle) * MOVE_SPEED;
+    moveX -= Math.cos(player.pose.angle) * MOVE_SPEED;
+    moveY -= Math.sin(player.pose.angle) * MOVE_SPEED;
   }
   if (keys["a"]) {
-    moveX += Math.cos(player.angle - Math.PI / 2) * MOVE_SPEED;
-    moveY += Math.sin(player.angle - Math.PI / 2) * MOVE_SPEED;
+    moveX += Math.cos(player.pose.angle - Math.PI / 2) * MOVE_SPEED;
+    moveY += Math.sin(player.pose.angle - Math.PI / 2) * MOVE_SPEED;
   }
   if (keys["d"]) {
-    moveX += Math.cos(player.angle + Math.PI / 2) * MOVE_SPEED;
-    moveY += Math.sin(player.angle + Math.PI / 2) * MOVE_SPEED;
+    moveX += Math.cos(player.pose.angle + Math.PI / 2) * MOVE_SPEED;
+    moveY += Math.sin(player.pose.angle + Math.PI / 2) * MOVE_SPEED;
   }
 
   if (keys[" "] && onGround) {
@@ -205,19 +205,19 @@ function update() {
     onGround = false;
   }
 
-  const nx = player.x + moveX;
+  const nx = player.pose.x + moveX;
   if (
-    !isWall(nx + PLAYER_RADIUS, player.y) &&
-    !isWall(nx - PLAYER_RADIUS, player.y)
+    !isWall(nx + PLAYER_RADIUS, player.pose.y) &&
+    !isWall(nx - PLAYER_RADIUS, player.pose.y)
   )
-    player.x = nx;
+    player.pose.x = nx;
 
-  const ny = player.y + moveY;
+  const ny = player.pose.y + moveY;
   if (
-    !isWall(player.x, ny + PLAYER_RADIUS) &&
-    !isWall(player.x, ny - PLAYER_RADIUS)
+    !isWall(player.pose.x, ny + PLAYER_RADIUS) &&
+    !isWall(player.pose.x, ny - PLAYER_RADIUS)
   )
-    player.y = ny;
+    player.pose.y = ny;
 
   zVel -= GRAVITY;
   z += zVel;
@@ -231,7 +231,7 @@ function update() {
 
   if (ws.readyState === WebSocket.OPEN) {
     ws.send(
-      JSON.stringify({ x: player.x, y: player.y, angle: player.angle, z })
+      JSON.stringify({ x: player.pose.x, y: player.pose.y, angle: player.pose.angle, z })
     );
   }
 }
@@ -243,12 +243,12 @@ function castRay(angle) {
   const sin = Math.sin(angle),
     cos = Math.cos(angle);
   let d = 0,
-    prevX = player.x,
-    prevY = player.y;
+    prevX = player.pose.x,
+    prevY = player.pose.y;
 
   while (d < 20) {
-    const x = player.x + cos * d;
-    const y = player.y + sin * d;
+    const x = player.pose.x + cos * d;
+    const y = player.pose.y + sin * d;
     if (isWall(x, y))
       return { dist: d, vertical: Math.floor(x) !== Math.floor(prevX) };
     prevX = x;
@@ -271,8 +271,8 @@ function drawMinimap() {
     VIEW_RADIUS * 2 * MINIMAP_SCALE + 8
   );
 
-  const centerX = Math.floor(player.x),
-    centerY = Math.floor(player.y);
+  const centerX = Math.floor(player.pose.x),
+    centerY = Math.floor(player.pose.y);
 
   for (let y = -VIEW_RADIUS; y < VIEW_RADIUS; y++) {
     for (let x = -VIEW_RADIUS; x < VIEW_RADIUS; x++) {
@@ -293,8 +293,8 @@ function drawMinimap() {
   for (const id in others) {
     if (id === myId) continue;
     const p = others[id];
-    const dx = p.x - player.x,
-      dy = p.y - player.y;
+    const dx = p.x - player.pose.x,
+      dy = p.y - player.pose.y;
     if (Math.abs(dx) > VIEW_RADIUS || Math.abs(dy) > VIEW_RADIUS) continue;
     ctx.fillStyle = "red";
     ctx.beginPath();
@@ -328,8 +328,8 @@ function drawMinimap() {
     startY + VIEW_RADIUS * MINIMAP_SCALE + (VIEW_RADIUS / 2)
   );
   ctx.lineTo(
-    startX + (VIEW_RADIUS + Math.cos(player.angle) * 0.8) * MINIMAP_SCALE + (VIEW_RADIUS / 2),
-    startY + (VIEW_RADIUS + Math.sin(player.angle) * 0.8) * MINIMAP_SCALE + (VIEW_RADIUS / 2)
+    startX + (VIEW_RADIUS + Math.cos(player.pose.angle) * 0.8) * MINIMAP_SCALE + (VIEW_RADIUS / 2),
+    startY + (VIEW_RADIUS + Math.sin(player.pose.angle) * 0.8) * MINIMAP_SCALE + (VIEW_RADIUS / 2)
   );
   ctx.stroke();
 }
@@ -348,13 +348,13 @@ function render() {
 
   const depth = [];
 
-  let prevTileX = Math.floor(player.x);
-  let prevTileY = Math.floor(player.y);
+  let prevTileX = Math.floor(player.pose.x);
+  let prevTileY = Math.floor(player.pose.y);
 
   for (let i = 0; i < RAYS; i++) {
-    const rayAngle = player.angle - FOV / 2 + (i / RAYS) * FOV;
+    const rayAngle = player.pose.angle - FOV / 2 + (i / RAYS) * FOV;
     const hit = castRay(rayAngle);
-    const dist = hit.dist * Math.cos(rayAngle - player.angle);
+    const dist = hit.dist * Math.cos(rayAngle - player.pose.angle);
     const height = canvas.height / dist;
 
     depth[i] = dist;
@@ -368,8 +368,8 @@ function render() {
     ctx.fillRect(i, horizon - height / 2, 1, height);
 
     // --- Edge detection: check if ray crossed tile boundary ---
-    const hitX = player.x + Math.cos(rayAngle) * hit.dist;
-    const hitY = player.y + Math.sin(rayAngle) * hit.dist;
+    const hitX = player.pose.x + Math.cos(rayAngle) * hit.dist;
+    const hitY = player.pose.y + Math.sin(rayAngle) * hit.dist;
 
     const tileX = Math.floor(hitX);
     const tileY = Math.floor(hitY);
@@ -389,11 +389,11 @@ function render() {
     if (id === myId) continue;
     const p = others[id];
 
-    const dx = p.x - player.x;
-    const dy = p.y - player.y;
+    const dx = p.x - player.pose.x;
+    const dy = p.y - player.pose.y;
     const dist = Math.hypot(dx, dy);
 
-    const angle = Math.atan2(dy, dx) - player.angle;
+    const angle = Math.atan2(dy, dx) - player.pose.angle;
     const norm = Math.atan2(Math.sin(angle), Math.cos(angle));
     if (Math.abs(norm) > FOV / 2) continue;
 
